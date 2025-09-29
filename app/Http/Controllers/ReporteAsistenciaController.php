@@ -397,14 +397,25 @@ class ReporteAsistenciaController extends Controller
             <meta charset="UTF-8">
             <title>Reporte de Asistencia</title>
             <style>
-                body { font-family: Arial, sans-serif; font-size: 10px; margin: 0; padding: 10px; }
+                @page {
+                    size: letter;
+                    margin: 0.4in 0.25in;
+                }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    font-size: 7px; 
+                    margin: 0; 
+                    padding: 0; 
+                    line-height: 1.0;
+                }
                 .main-header { 
                     display: flex; 
                     justify-content: space-between; 
                     align-items: center; 
-                    margin-bottom: 20px; 
-                    border-bottom: 2px solid #28a745;
-                    padding-bottom: 15px;
+                    margin-bottom: 8px; 
+                    border-bottom: 1px solid #28a745;
+                    padding-bottom: 5px;
+                    page-break-inside: avoid;
                 }
                 .logo-section {
                     display: flex;
@@ -413,39 +424,88 @@ class ReporteAsistenciaController extends Controller
                 .logo-cecyte {
                     background-color: #28a745;
                     color: white;
-                    padding: 8px 12px;
-                    border-radius: 4px;
+                    padding: 4px 6px;
+                    border-radius: 2px;
                     font-weight: bold;
-                    font-size: 14px;
-                    margin-right: 10px;
+                    font-size: 9px;
+                    margin-right: 5px;
                 }
                 .logo-text {
                     color: #28a745;
-                    font-size: 12px;
+                    font-size: 8px;
                     font-weight: bold;
                 }
                 .departamento {
                     color: #28a745;
-                    font-size: 11px;
+                    font-size: 7px;
                     text-align: right;
                 }
                 .reporte-title {
                     text-align: center;
-                    font-size: 16px;
+                    font-size: 10px;
                     font-weight: bold;
                     color: black;
-                    margin: 20px 0;
+                    margin: 8px 0;
                 }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                th, td { border: 1px solid #000; padding: 4px; text-align: center; }
-                th { background-color: #28a745; color: white; font-weight: bold; }
-                .employee-header { background-color: #f8f9fa; font-weight: bold; text-align: left; padding: 6px 8px; }
-                .time-cell { font-family: monospace; font-size: 9px; }
-                .estatus-falta { color: #dc3545; font-weight: bold; }
-                .estatus-normal { color: #28a745; font-weight: bold; }
-                .sin-datos { color: #6c757d; }
-                .summary-row { background-color: black; color: white; font-weight: bold; }
-                .summary-total { background-color: white; color: black; }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-bottom: 5px; 
+                    font-size: 6px;
+                }
+                th, td { 
+                    border: 1px solid #000; 
+                    padding: 2px; 
+                    text-align: center; 
+                    font-size: 6px;
+                }
+                th { 
+                    background-color: #28a745; 
+                    color: white; 
+                    font-weight: bold; 
+                    font-size: 6px;
+                }
+                .employee-header { 
+                    background-color: #f8f9fa; 
+                    font-weight: bold; 
+                    text-align: left; 
+                    padding: 3px 4px; 
+                    font-size: 8px;
+                }
+                .time-cell { 
+                    font-family: monospace; 
+                    font-size: 5px; 
+                }
+                .estatus-falta { 
+                    color: #dc3545; 
+                    font-weight: bold; 
+                    font-size: 6px;
+                }
+                .estatus-normal { 
+                    color: #28a745; 
+                    font-weight: bold; 
+                    font-size: 6px;
+                }
+                .sin-datos { 
+                    color: #6c757d; 
+                    font-size: 6px;
+                }
+                .summary-row { 
+                    background-color: black; 
+                    color: white; 
+                    font-weight: bold; 
+                    font-size: 6px;
+                }
+                .summary-total { 
+                    background-color: white; 
+                    color: black; 
+                }
+                .page-break { 
+                    page-break-before: always; 
+                }
+                .no-break { 
+                    page-break-inside: avoid; 
+                }
             </style>
         </head>
         <body>
@@ -467,37 +527,53 @@ class ReporteAsistenciaController extends Controller
             </div>
         ';
 
+        $empleadoIndex = 0;
+        $maxEmpleadosPorPagina = 3; // Máximo de empleados por página
+        
         foreach ($reporte as $empleado) {
+            // Calcular si necesitamos salto de página
+            $necesitaSaltoPagina = ($empleadoIndex > 0 && $empleadoIndex % $maxEmpleadosPorPagina == 0);
+            
+            if ($necesitaSaltoPagina) {
+                $html .= '<div class="page-break"></div>';
+            }
+            
             $html .= '
-            <table>
-                <tr class="employee-header">
-                    <td colspan="7">' . $empleado['numero_empleado'] . ' ' . $empleado['nombre'] . ' ' . $empleado['puesto'] . '</td>
-                </tr>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Día</th>
-                    <th>Hora Entrada</th>
-                    <th>Estatus</th>
-                    <th>Hora Salida</th>
-                    <th>Estatus</th>
-                    <th>Tiempo Trabajado</th>
-                </tr>
+            <div class="no-break" style="margin-bottom: 8px;">
+                <div class="employee-header">
+                    ' . $empleado['numero_empleado'] . ' ' . $empleado['nombre'] . ' ' . $empleado['puesto'] . '
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Día</th>
+                            <th>Hora Entrada</th>
+                            <th>Estatus</th>
+                            <th>Hora Salida</th>
+                            <th>Estatus</th>
+                            <th>Tiempo Trabajado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
             ';
 
             foreach ($empleado['asistencias'] as $asistencia) {
-                $estatusEntradaClass = isset($asistencia['estatus_entrada']) && $asistencia['estatus_entrada'] === 'Falta Entrada' ? 'estatus-falta' : 
-                                      (isset($asistencia['estatus_entrada']) && $asistencia['estatus_entrada'] === 'Puntual' ? 'estatus-normal' : 'sin-datos');
-                $estatusSalidaClass = isset($asistencia['estatus_salida']) && $asistencia['estatus_salida'] === 'Falta' ? 'estatus-falta' : 
-                                     (isset($asistencia['estatus_salida']) && $asistencia['estatus_salida'] === 'Normal' ? 'estatus-normal' : 'sin-datos');
+                $estatusEntradaClass = isset($asistencia['estatus_entrada']) && $asistencia['estatus_entrada'] === 'Falta Entrada' ? 'color: #dc3545; font-weight: bold;' : 
+                                      (isset($asistencia['estatus_entrada']) && $asistencia['estatus_entrada'] === 'Puntual' ? 'color: #28a745; font-weight: bold;' : 'color: #6c757d;');
+                $estatusSalidaClass = isset($asistencia['estatus_salida']) && $asistencia['estatus_salida'] === 'Falta' ? 'color: #dc3545; font-weight: bold;' : 
+                                     (isset($asistencia['estatus_salida']) && $asistencia['estatus_salida'] === 'Normal' ? 'color: #28a745; font-weight: bold;' : 'color: #6c757d;');
                 
                 $html .= '
                 <tr>
                     <td>' . $asistencia['fecha'] . '</td>
                     <td>' . strtolower($asistencia['dia']) . '</td>
                     <td class="time-cell">' . ($asistencia['hora_entrada'] ?? '00:00 - 00:00') . '</td>
-                    <td class="' . $estatusEntradaClass . '">' . ($asistencia['estatus_entrada'] ?? 'Falta') . '</td>
+                    <td class="' . (isset($asistencia['estatus_entrada']) && $asistencia['estatus_entrada'] === 'Falta Entrada' ? 'estatus-falta' : 
+                                      (isset($asistencia['estatus_entrada']) && $asistencia['estatus_entrada'] === 'Puntual' ? 'estatus-normal' : 'sin-datos')) . '">' . ($asistencia['estatus_entrada'] ?? 'Falta') . '</td>
                     <td class="time-cell">' . ($asistencia['hora_salida'] ?? '00:00 - 00:00') . '</td>
-                    <td class="' . $estatusSalidaClass . '">' . ($asistencia['estatus_salida'] ?? 'Falta') . '</td>
+                    <td class="' . (isset($asistencia['estatus_salida']) && $asistencia['estatus_salida'] === 'Falta' ? 'estatus-falta' : 
+                                     (isset($asistencia['estatus_salida']) && $asistencia['estatus_salida'] === 'Normal' ? 'estatus-normal' : 'sin-datos')) . '">' . ($asistencia['estatus_salida'] ?? 'Falta') . '</td>
                     <td>' . ($asistencia['tiempo_trabajado'] ?? '00:00') . '</td>
                 </tr>
                 ';
@@ -511,16 +587,24 @@ class ReporteAsistenciaController extends Controller
             $salidaFaltante = $this->calcularSalidaFaltante($empleado['asistencias']);
             
             $html .= '
-                <tr class="summary-row">
-                    <td class="summary-total">Total horas: ' . $totalHoras . '</td>
-                    <td>Horas trabajadas: ' . $horasTrabajadas . '</td>
-                    <td>Faltas días: ' . $faltasDias . '</td>
-                    <td>Entrada faltante: ' . $entradaFaltante . '</td>
-                    <td>Salida faltante: ' . $salidaFaltante . '</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </table><br>';
+                    </tbody>
+                </table>
+                
+                <table style="margin-bottom: 5px;">
+                    <tr class="summary-row">
+                        <td class="summary-total">Total horas: ' . $totalHoras . '</td>
+                        <td>Horas trabajadas: ' . $horasTrabajadas . '</td>
+                        <td>Faltas días: ' . $faltasDias . '</td>
+                        <td>Entrada faltante: ' . $entradaFaltante . '</td>
+                        <td>Salida faltante: ' . $salidaFaltante . '</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            ';
+            
+            $empleadoIndex++;
         }
 
         $html .= '</body></html>';

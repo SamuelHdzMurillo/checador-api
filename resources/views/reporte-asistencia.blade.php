@@ -16,9 +16,9 @@
         }
         .reporte-container {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 20px 0;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            margin: 8px 0;
             overflow: hidden;
         }
         .filtros-section {
@@ -30,25 +30,26 @@
         .tabla-reporte {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
+            font-size: 8px;
             margin: 0;
         }
         .tabla-reporte th {
             background-color: #28a745;
             color: white;
-            font-size: 11px;
-            padding: 8px 6px;
+            font-size: 8px;
+            padding: 4px 3px;
             text-align: center;
             vertical-align: middle;
             font-weight: bold;
             border: 1px solid #28a745;
         }
         .tabla-reporte td {
-            padding: 6px 6px;
+            padding: 3px 3px;
             text-align: center;
             vertical-align: middle;
             border: 1px solid #dee2e6;
             background-color: white;
+            font-size: 7px;
         }
         .empleado-header {
             background-color: #e9ecef !important;
@@ -95,14 +96,15 @@
         }
         .header-empleado {
             background-color: #f8f9fa;
-            padding: 8px 12px;
+            padding: 4px 6px;
             font-weight: bold;
             color: #495057;
-            border-bottom: 2px solid #dee2e6;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 9px;
         }
         .time-cell {
             font-family: 'Courier New', monospace;
-            font-size: 10px;
+            font-size: 7px;
         }
         .container-fluid {
             max-width: 100%;
@@ -274,14 +276,19 @@
                     </div>
             `;
 
-            reporte.forEach(empleado => {
+            reporte.forEach((empleado, index) => {
+                // Agregar salto de página cada 3 empleados
+                if (index > 0 && index % 3 === 0) {
+                    html += '<div style="page-break-before: always;"></div>';
+                }
+                
                 html += `
-                    <div class="reporte-container">
+                    <div class="reporte-container" style="margin-bottom: 8px; page-break-inside: avoid;">
                         <div class="header-empleado">
                             ${empleado.numero_empleado} ${empleado.nombre} ${empleado.puesto}
                         </div>
                         
-                        <table class="tabla-reporte">
+                        <table class="tabla-reporte" style="margin-bottom: 3px;">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
@@ -318,8 +325,19 @@
                 html += `
                             </tbody>
                         </table>
+                        
+                        <table class="tabla-reporte" style="margin-bottom: 5px;">
+                            <tr class="summary-row">
+                                <td class="summary-total">Total horas: ${calcularTotalHoras(empleado.asistencias)}</td>
+                                <td>Horas trabajadas: ${calcularHorasTrabajadas(empleado.asistencias)}</td>
+                                <td>Faltas días: ${calcularFaltasDias(empleado.asistencias)}</td>
+                                <td>Entrada faltante: ${calcularEntradaFaltante(empleado.asistencias)}</td>
+                                <td>Salida faltante: ${calcularSalidaFaltante(empleado.asistencias)}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </table>
                     </div>
-                    <br>
                 `;
             });
 
@@ -337,6 +355,40 @@
 
         function formatearFecha(fecha) {
             return new Date(fecha).toLocaleDateString('es-ES');
+        }
+
+        // Funciones para calcular totales
+        function calcularTotalHoras(asistencias) {
+            let totalMinutos = 0;
+            asistencias.forEach(asistencia => {
+                if (asistencia.tiempo_trabajado && asistencia.tiempo_trabajado !== '00:00') {
+                    const tiempo = asistencia.tiempo_trabajado.split(':');
+                    if (tiempo.length >= 2) {
+                        const horas = parseInt(tiempo[0]);
+                        const minutos = parseInt(tiempo[1]);
+                        totalMinutos += (horas * 60) + minutos;
+                    }
+                }
+            });
+            const horas = Math.floor(totalMinutos / 60);
+            const minutos = totalMinutos % 60;
+            return `${horas}:${minutos.toString().padStart(2, '0')}`;
+        }
+
+        function calcularHorasTrabajadas(asistencias) {
+            return asistencias.filter(a => a.tiempo_trabajado && a.tiempo_trabajado !== '00:00').length;
+        }
+
+        function calcularFaltasDias(asistencias) {
+            return asistencias.filter(a => a.estatus_entrada === 'Falta Entrada').length;
+        }
+
+        function calcularEntradaFaltante(asistencias) {
+            return asistencias.filter(a => a.estatus_entrada === 'Falta Entrada').length;
+        }
+
+        function calcularSalidaFaltante(asistencias) {
+            return asistencias.filter(a => a.estatus_salida === 'Falta').length;
         }
 
         // Exportar PDF
