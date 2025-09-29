@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\ChecadaController;
+use App\Http\Controllers\ReporteAsistenciaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,3 +40,8 @@ Route::post('/checadas/procesar', [ChecadaController::class, 'procesarChecadas']
 Route::post('/checadas/procesar-archivo', [ChecadaController::class, 'procesarArchivoChecadas']);
 Route::get('/checadas', [ChecadaController::class, 'obtenerChecadas']);
 Route::get('/checadas/empleado/{numeroEmpleado}', [ChecadaController::class, 'obtenerChecadasPorEmpleado']);
+
+// Rutas para reportes de asistencia
+Route::post('/reportes/asistencia', [ReporteAsistenciaController::class, 'generarReporte']);
+Route::post('/reportes/asistencia/pdf', [ReporteAsistenciaController::class, 'generarReportePDF']);
+Route::get('/reportes/verificar-horarios', [ReporteAsistenciaController::class, 'verificarHorarios']);

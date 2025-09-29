@@ -16,3 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Ruta para el reporte de asistencia
+Route::get('/reporte-asistencia', function () {
+    return view('reporte-asistencia');
+});
